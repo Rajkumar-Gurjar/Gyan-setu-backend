@@ -9,6 +9,13 @@ export interface ILesson extends Document {
     duration: number;       // 45 (minutes)
     description: string;    // "Basic concepts..."
     instructor: string;     // "Dr. Sharma"
+    content?: {
+        type: string;
+        videoKey?: string;
+        videoDuration?: number;
+        body?: Record<string, string>;
+    };
+    tags?: string[];
     createdAt: Date;        // "2025-01-15..."
     updatedAt: Date;
 }
@@ -50,7 +57,17 @@ const lessonSchema = new Schema<ILesson>({
         type: String,
         required: [true, 'Instructor name is required'],
         trim: true
-    }
+    },
+    content: new Schema({
+        type: {
+            type: String,
+            required: true
+        },
+        videoKey: String,
+        videoDuration: Number,
+        body: Schema.Types.Mixed
+    }, { _id: false }),
+    tags: [String]
 }, {
     // This automatically manages 'createdAt' and 'updatedAt'
     timestamps: true

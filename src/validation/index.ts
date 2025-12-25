@@ -20,10 +20,9 @@ export {
 
 // Lesson schemas (Domain specific validation)
 export {
-    createLessonSchema,
-    updateLessonSchema,
-    // Assuming you define a specific query schema for lessons
-    // (e.g., if you add specific filters not in the common pagination)
+    CreateLessonBodySchema,
+    UpdateLessonBodySchema,
+    lessonQuerySchema,
     type CreateLessonDTO,
     type UpdateLessonDTO
 } from './schemas/Lesson.schema';
