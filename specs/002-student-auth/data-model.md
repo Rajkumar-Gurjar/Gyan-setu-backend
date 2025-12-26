@@ -25,7 +25,7 @@
 ### School (Reference)
 - `_id`: ObjectId
 - `name`: String
-- `code`: String (Unique, Indexed)
+- `schoolCode`: String (Unique, Indexed)
 
 ### AuditLog
 - `_id`: ObjectId
