@@ -30,7 +30,10 @@ describe('Auth API', () => {
       lastName: 'User',
       email: 'testuser@example.com',
       password: 'password123',
+      language: 'pa',
       schoolCode: 'TEST123',
+      class: 8,
+      section: 'A',
     };
 
     it('should register a new user and return 201', async () => {
@@ -89,7 +92,10 @@ describe('Auth API', () => {
       lastName: 'LoginUser',
       email: 'testlogin@example.com',
       password: 'password123',
+      language: 'hi',
       schoolCode: 'TEST123',
+      class: 9,
+      section: 'B',
     };
 
     beforeEach(async () => {
@@ -161,7 +167,10 @@ describe('Auth API', () => {
       lastName: 'RefreshUser',
       email: 'testrefresh@example.com',
       password: 'password123',
+      language: 'en',
       schoolCode: 'TEST123',
+      class: 10,
+      section: 'C',
     };
 
     let refreshToken: string;

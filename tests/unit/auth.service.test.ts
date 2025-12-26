@@ -48,6 +48,7 @@ describe('AuthService', () => {
       password: 'password123',
       firstName: 'Test',
       lastName: 'User',
+      language: 'pa',
       schoolCode: 'VALIDCODE',
     };
 

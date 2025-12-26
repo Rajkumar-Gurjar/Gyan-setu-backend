@@ -24,7 +24,7 @@
 **Purpose**: Project initialization and core security dependencies.
 
 - [X] T001 Install dependencies: `npm install jsonwebtoken bcryptjs`
-- [ ] T002 Configure environment variables in `.env` (`JWT_SECRET`, `JWT_REFRESH_SECRET`)
+- [X] T002 Configure environment variables in `.env` (`JWT_SECRET`, `JWT_REFRESH_SECRET`)
 - [X] T003 [P] Create `AuditLog` model in `src/models/AuditLog.model.ts`
 - [X] T004 [P] Create `School` model in `src/models/School.model.ts`
 
@@ -112,7 +112,7 @@
 
 - [X] T026 [P] Document auth endpoints in `specs/002-student-auth/contracts/openapi.yaml`
 - [X] T027 [P] Add error handling for JWT expiration in middleware
-- [ ] T028 Final code review and cleanup against constitution principles
+- [X] T028 Final code review and cleanup against constitution principles
 
 ---
 
