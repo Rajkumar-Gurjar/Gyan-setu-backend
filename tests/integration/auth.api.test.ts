@@ -153,5 +153,54 @@ describe('Auth API', () => {
       expect(res.statusCode).toEqual(423);
     });
   });
+
+  describe('POST /api/v1/auth/refresh', () => {
+    const registrationData = {
+      firstName: 'Test',
+      lastName: 'RefreshUser',
+      email: 'testrefresh@example.com',
+      password: 'password123',
+      schoolCode: 'TEST123',
+    };
+
+    let refreshToken: string;
+
+    beforeEach(async () => {
+      // Register and login to get a refresh token
+      await request(app).post('/api/v1/auth/register').send(registrationData);
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: registrationData.email, password: registrationData.password });
+      refreshToken = res.body.data.refreshToken;
+    });
+
+    it('should refresh the access token with a valid refresh token and return 200', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/refresh')
+        .send({ refreshToken });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toHaveProperty('accessToken');
+    });
+
+    it('should return 401 for an invalid refresh token', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/refresh')
+        .send({ refreshToken: 'invalid-token' });
+
+      expect(res.statusCode).toEqual(401);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should return 400 if refreshToken is missing', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/refresh')
+        .send({});
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.success).toBe(false);
+    });
+  });
 });
 
