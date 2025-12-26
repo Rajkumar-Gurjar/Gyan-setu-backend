@@ -97,12 +97,12 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T025 [P] [US3] Add integration tests for progress viewing endpoints to `tests/integration/quiz.api.test.ts`.
+- [X] T025 [P] [US3] Add integration tests for progress viewing endpoints to `tests/integration/quiz.api.test.ts`.
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Implement service logic to retrieve a user's quiz attempts.
-- [ ] T027 [US3] Implement controller and route for `GET /progress/quizzes/me`.
+- [X] T026 [US3] Implement service logic to retrieve a user's quiz attempts.
+- [X] T027 [US3] Implement controller and route for `GET /progress/quizzes/me`.
 - [ ] T028 [US3] Implement service logic for teachers to view class analytics.
 - [ ] T029 [US3] Implement controller and route for teachers to view analytics.
 

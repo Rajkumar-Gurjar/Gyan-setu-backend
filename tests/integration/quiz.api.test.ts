@@ -206,4 +206,36 @@ describe('Quiz API Integration Tests', () => {
         expect(quiz.questions[0].options[0]).not.toHaveProperty('isCorrect');
     });
   });
+
+  describe('GET /api/v1/progress/quizzes/me', () => {
+    it('should return all quiz attempts for the authenticated student', async () => {
+        // 1. Submit an attempt first
+        const quiz = await QuizModel.findById(quizId);
+        const question = quiz!.questions[0];
+        const submission = {
+            answers: [{ questionId: question._id, selectedOption: question.options.find(o => o.isCorrect)?._id }]
+        };
+
+        await request(app)
+            .post(`/api/v1/quizzes/${quizId}/attempt`)
+            .set('Authorization', `Bearer ${studentToken}`)
+            .send(submission);
+
+        // 2. Fetch progress
+        const res = await request(app)
+            .get('/api/v1/progress/quizzes/me')
+            .set('Authorization', `Bearer ${studentToken}`);
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.success).toBe(true);
+        expect(Array.isArray(res.body.data)).toBe(true);
+        expect(res.body.data.length).toBeGreaterThan(0);
+        expect(res.body.data[0].quizId.toString()).toBe(quizId);
+    });
+
+    it('should return 401 if not authenticated', async () => {
+        const res = await request(app).get('/api/v1/progress/quizzes/me');
+        expect(res.statusCode).toEqual(401);
+    });
+  });
 });

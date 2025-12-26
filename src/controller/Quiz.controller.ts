@@ -95,13 +95,11 @@ export async function deleteQuiz(req: Request, res: Response): Promise<void> {
 export async function submitQuizAttempt(req: Request, res: Response): Promise<void> {
     try {
         const { id } = req.params;
+        const userId = (req as any).user?.id;
 
-        // Manual check for Authorization header since middleware is not yet implemented/applied
-        if (!req.headers.authorization) {
+        if (!userId) {
             return sendError(res, 'Authentication required', 401);
         }
-
-        const userId = (req as any).user?.id || 'anonymous'; // Fallback for testing if auth middleware not present
         
         const result = await QuizService.submitQuizAttempt(id, userId, req.body);
         
@@ -112,5 +110,24 @@ export async function submitQuizAttempt(req: Request, res: Response): Promise<vo
         }
         console.error('Error in submitQuizAttempt:', error);
         sendError(res, 'Failed to submit quiz attempt', 500);
+    }
+}
+
+/**
+ * Retrieves the current user's quiz attempts.
+ * @route GET /api/v1/progress/quizzes/me
+ */
+export async function getMyQuizAttempts(req: Request, res: Response): Promise<void> {
+    try {
+        const userId = (req as any).user?.id;
+        if (!userId) {
+            return sendError(res, 'Authentication required', 401);
+        }
+
+        const attempts = await QuizService.getUserQuizAttempts(userId);
+        sendSuccess(res, attempts, 200, 'Quiz attempts retrieved successfully');
+    } catch (error: any) {
+        console.error('Error in getMyQuizAttempts:', error);
+        sendError(res, 'Failed to fetch quiz attempts', 500);
     }
 }

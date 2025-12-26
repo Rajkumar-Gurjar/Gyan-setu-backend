@@ -110,8 +110,8 @@
 
 ## Phase N: Polish & Cross-Cutting Concerns
 
-- [ ] T026 [P] Document auth endpoints in `specs/002-student-auth/contracts/openapi.yaml`
-- [ ] T027 [P] Add error handling for JWT expiration in middleware
+- [X] T026 [P] Document auth endpoints in `specs/002-student-auth/contracts/openapi.yaml`
+- [X] T027 [P] Add error handling for JWT expiration in middleware
 - [ ] T028 Final code review and cleanup against constitution principles
 
 ---

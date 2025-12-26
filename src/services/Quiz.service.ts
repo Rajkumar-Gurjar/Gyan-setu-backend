@@ -1,4 +1,5 @@
 import { QuizModel, IQuiz } from '../models/quiz/Quiz.model';
+import { ProgressModel } from '../models/Progress.model';
 import { Types } from 'mongoose';
 
 // Placeholder for Quiz service functions
@@ -74,7 +75,8 @@ export const QuizService = {
      * Processes a quiz submission, calculates score, and records the attempt.
      */
     async submitQuizAttempt(quizId: string, userId: string, submissionData: { 
-        answers: Array<{ questionId: string, selectedOption?: string, answer?: string }> 
+        answers: Array<{ questionId: string, selectedOption?: string, answer?: string }>,
+        startedAt?: string
     }) {
         const quiz = await QuizModel.findById(quizId);
         if (!quiz) {
@@ -109,8 +111,10 @@ export const QuizService = {
 
             return {
                 questionId: question._id,
+                selectedOption: userAnswer?.selectedOption ? new Types.ObjectId(userAnswer.selectedOption) : undefined,
+                answer: userAnswer?.answer,
                 isCorrect,
-                pointsEarned,
+                points: pointsEarned,
                 explanation: question.explanation
             };
         });
@@ -119,8 +123,51 @@ export const QuizService = {
         const percentage = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
         const passed = percentage >= quiz.passingScore;
 
-        // Note: Actual recording to a Progress model would happen here in a real implementation.
-        // For now, we return the result as specified.
+        const submittedAt = new Date();
+        const startedAt = submissionData.startedAt ? new Date(submissionData.startedAt) : undefined;
+        const duration = startedAt ? Math.floor((submittedAt.getTime() - startedAt.getTime()) / 1000) : undefined;
+
+        // Recording to Progress model
+        if (quiz.lessonId) {
+            let progress = await ProgressModel.findOne({ userId, lessonId: quiz.lessonId });
+            
+            if (!progress) {
+                progress = new ProgressModel({
+                    userId,
+                    lessonId: quiz.lessonId,
+                    quizAttempts: []
+                });
+            }
+
+            const attemptNumber = progress.quizAttempts.filter(a => a.quizId.toString() === quizId).length + 1;
+
+            const attempt = {
+                quizId: new Types.ObjectId(quizId),
+                attemptNumber,
+                score,
+                totalPoints,
+                percentage,
+                passed,
+                answers: results.map(r => ({
+                    questionId: r.questionId,
+                    selectedOption: r.selectedOption,
+                    answer: r.answer,
+                    isCorrect: r.isCorrect,
+                    points: r.points
+                })),
+                startedAt,
+                submittedAt,
+                duration
+            };
+
+            progress.quizAttempts.push(attempt);
+            
+            if (percentage > progress.bestQuizScore) {
+                progress.bestQuizScore = percentage;
+            }
+
+            await progress.save();
+        }
 
         return {
             quizId,
@@ -130,7 +177,28 @@ export const QuizService = {
             percentage,
             passed,
             results,
-            submittedAt: new Date()
+            submittedAt
         };
+    },
+
+    /**
+     * Retrieves all quiz attempts for a specific user.
+     */
+    async getUserQuizAttempts(userId: string) {
+        const progressRecords = await ProgressModel.find({ userId })
+            .populate('lessonId', 'title subject class')
+            .lean();
+        
+        const allAttempts = progressRecords.reduce((acc: any[], record) => {
+            const attemptsWithLesson = record.quizAttempts.map(attempt => ({
+                ...attempt,
+                lesson: record.lessonId,
+                status: record.status
+            }));
+            return [...acc, ...attemptsWithLesson];
+        }, []);
+
+        // Sort by submittedAt descending
+        return allAttempts.sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime());
     },
 };
