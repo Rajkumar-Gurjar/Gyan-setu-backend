@@ -74,15 +74,15 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T016 [P] [US2] Add integration tests for login and lockout to `tests/integration/auth.api.test.ts`
-- [ ] T017 [P] [US2] Add unit tests for lockout logic to `tests/unit/auth.service.test.ts`
+- [X] T016 [P] [US2] Add integration tests for login and lockout to `tests/integration/auth.api.test.ts`
+- [X] T017 [P] [US2] Add unit tests for lockout logic to `tests/unit/auth.service.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Implement login logic with lockout check and AuditLog (LOGIN_SUCCESS/FAILURE) in `src/services/Auth.service.ts`
-- [ ] T019 [US2] Implement single-session enforcement (invalidate/overwrite refreshToken) in `src/services/Auth.service.ts`
-- [ ] T020 [US2] Implement `login` controller method in `src/controller/Auth.controller.ts`
-- [ ] T021 [US2] Map login route in `src/routes/Auth/Auth.route.ts`
+- [X] T018 [US2] Implement login logic with lockout check and AuditLog (LOGIN_SUCCESS/FAILURE) in `src/services/Auth.service.ts`
+- [X] T019 [US2] Implement single-session enforcement (invalidate/overwrite refreshToken) in `src/services/Auth.service.ts`
+- [X] T020 [US2] Implement `login` controller method in `src/controller/Auth.controller.ts`
+- [X] T021 [US2] Map login route in `src/routes/Auth/Auth.route.ts`
 
 **Checkpoint**: User Story 2 functional - Secure login and lockout active.
 

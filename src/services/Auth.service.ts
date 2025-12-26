@@ -1,8 +1,12 @@
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import School from '../models/School.model';
-import User from '../models/User.model';
+import User, { IUser } from '../models/User.model';
 import AuditLog from '../models/AuditLog.model';
-import { RegisterBody } from '../types/auth.types';
+import { RegisterBody, LoginBody } from '../types/auth.types';
+
+const LOCKOUT_THRESHOLD = 5;
+const LOCKOUT_DURATION_SECONDS = 30;
 
 class AuthService {
   /**
@@ -68,6 +72,67 @@ class AuthService {
     await auditLog.save();
 
     return newUser;
+  }
+
+  /**
+   * Generates JWT access and refresh tokens.
+   * @param user The user to generate tokens for.
+   * @returns Access and refresh tokens.
+   */
+  private generateTokens(user: IUser) {
+    const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'your_jwt_secret', {
+      expiresIn: '15m',
+    });
+    const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET || 'your_jwt_refresh_secret', {
+      expiresIn: '7d',
+    });
+    return { accessToken, refreshToken };
+  }
+
+  /**
+   * Logs in a user.
+   * @param data The login data.
+   * @returns Access and refresh tokens.
+   */
+  public async login(data: LoginBody) {
+    const { email, password } = data;
+
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+
+    if (user.lockUntil && user.lockUntil > new Date()) {
+      throw new Error(`Account locked. Try again after ${Math.ceil((user.lockUntil.getTime() - Date.now()) / 1000)} seconds.`);
+    }
+
+    const isMatch = user.password ? await bcrypt.compare(password, user.password) : false;
+    if (!isMatch) {
+      user.loginAttempts += 1;
+      if (user.loginAttempts >= LOCKOUT_THRESHOLD) {
+        user.lockUntil = new Date(Date.now() + LOCKOUT_DURATION_SECONDS * 1000);
+        const auditLog = new AuditLog({ userId: user._id, action: 'LOCKOUT' });
+        await auditLog.save();
+      }
+      await user.save();
+      
+      const auditLog = new AuditLog({ userId: user._id, action: 'LOGIN_FAILURE' });
+      await auditLog.save();
+
+      throw new Error('Invalid credentials');
+    }
+
+    user.loginAttempts = 0;
+    user.lastLogin = new Date();
+    
+    const tokens = this.generateTokens(user);
+    user.refreshToken = tokens.refreshToken; // For single-session enforcement
+    await user.save();
+
+    const auditLog = new AuditLog({ userId: user._id, action: 'LOGIN_SUCCESS' });
+    await auditLog.save();
+
+    return tokens;
   }
 }
 

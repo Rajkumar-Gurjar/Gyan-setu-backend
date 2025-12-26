@@ -82,5 +82,76 @@ describe('Auth API', () => {
       expect(res.body.errors[0].field).toBe('email');
     });
   });
+
+  describe('POST /api/v1/auth/login', () => {
+    const registrationData = {
+      firstName: 'Test',
+      lastName: 'LoginUser',
+      email: 'testlogin@example.com',
+      password: 'password123',
+      schoolCode: 'TEST123',
+    };
+
+    beforeEach(async () => {
+      // Register a user before each test in this block
+      await request(app).post('/api/v1/auth/register').send(registrationData);
+    });
+
+    it('should login a registered user and return 200', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: registrationData.email, password: registrationData.password });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toHaveProperty('accessToken');
+      expect(res.body.data).toHaveProperty('refreshToken');
+    });
+
+    it('should return 401 for an unregistered user', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: 'unregistered@example.com', password: 'password' });
+
+      expect(res.statusCode).toEqual(401);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should return 401 for a wrong password', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: registrationData.email, password: 'wrongpassword' });
+
+      expect(res.statusCode).toEqual(401);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should lock the user account after 5 failed login attempts', async () => {
+      const loginAttempt = (password: string) =>
+        request(app).post('/api/v1/auth/login').send({ email: registrationData.email, password });
+
+      for (let i = 0; i < 5; i++) {
+        await loginAttempt('wrongpassword');
+      }
+
+      const res = await loginAttempt('wrongpassword');
+      expect(res.statusCode).toEqual(423); // 423 Locked
+      expect(res.body.message).toContain('Account locked');
+    }, 10000); // Increase timeout for this test
+
+    it('should return 423 if the user is locked', async () => {
+      const user = await User.findOne({ email: registrationData.email });
+      if (user) {
+        user.lockUntil = new Date(Date.now() + 30000); // Lock for 30 seconds
+        await user.save();
+      }
+
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: registrationData.email, password: registrationData.password });
+
+      expect(res.statusCode).toEqual(423);
+    });
+  });
 });
 

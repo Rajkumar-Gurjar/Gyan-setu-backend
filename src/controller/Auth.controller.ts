@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import AuthService from '../services/Auth.service';
 import { sendSuccess, sendError } from '../utils/response.utils';
-import { RegisterBody } from '../types/auth.types';
+import { RegisterBody, LoginBody } from '../types/auth.types';
 
 class AuthController {
   public async register(req: Request, res: Response): Promise<void> {
@@ -24,8 +24,18 @@ class AuthController {
   }
 
   public async login(req: Request, res: Response): Promise<void> {
-    // Implementation to be added in a future task
-    sendSuccess(res, { message: 'User logged in successfully' }, 200);
+    try {
+      const tokens = await AuthService.login(req.body as LoginBody);
+      sendSuccess(res, tokens, 200, 'User logged in successfully');
+    } catch (error: any) {
+      if (error.message === 'Invalid credentials') {
+        sendError(res, error.message, 401);
+      } else if (error.message.includes('Account locked')) {
+        sendError(res, error.message, 423);
+      } else {
+        sendError(res, 'Failed to login', 500);
+      }
+    }
   }
 
   public async refresh(req: Request, res: Response): Promise<void> {
