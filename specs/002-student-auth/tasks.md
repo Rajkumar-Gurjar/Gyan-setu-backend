@@ -53,7 +53,7 @@
 ### Tests for User Story 1 ⚠️
 
 - [X] T010 [P] [US1] Create integration test for registration in `tests/integration/auth.api.test.ts`
-- [ ] T011 [P] [US1] Create unit test for registration logic in `tests/unit/auth.service.test.ts`
+- [X] T011 [P] [US1] Create unit test for registration logic in `tests/unit/auth.service.test.ts`
 
 ### Implementation for User Story 1
 
