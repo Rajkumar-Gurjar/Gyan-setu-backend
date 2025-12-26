@@ -25,7 +25,16 @@ const router = Router();
 router.use(rateLimiter(false));
 
 /**
- * @route   GET /api/v1/quizzes
+ * @openapi
+ * /quizzes:
+ *   get:
+ *     summary: Get all quizzes
+ *     tags: [Quizzes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of quizzes
  */
 router.get(
     '/',
@@ -35,7 +44,22 @@ router.get(
 );
 
 /**
- * @route   GET /api/v1/quizzes/:id
+ * @openapi
+ * /quizzes/{id}:
+ *   get:
+ *     summary: Get quiz by ID
+ *     tags: [Quizzes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Quiz details
  */
 router.get(
     '/:id',
@@ -45,7 +69,22 @@ router.get(
 );
 
 /**
- * @route   POST /api/v1/quizzes
+ * @openapi
+ * /quizzes:
+ *   post:
+ *     summary: Create a new quiz
+ *     tags: [Quizzes]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Quiz'
+ *     responses:
+ *       201:
+ *         description: Quiz created
  */
 router.post(
     '/',
@@ -57,7 +96,28 @@ router.post(
 );
 
 /**
- * @route   PATCH /api/v1/quizzes/:id
+ * @openapi
+ * /quizzes/{id}:
+ *   patch:
+ *     summary: Update an existing quiz
+ *     tags: [Quizzes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Quiz'
+ *     responses:
+ *       200:
+ *         description: Quiz updated
  */
 router.patch(
     '/:id',
@@ -70,7 +130,22 @@ router.patch(
 );
 
 /**
- * @route   DELETE /api/v1/quizzes/:id
+ * @openapi
+ * /quizzes/{id}:
+ *   delete:
+ *     summary: Soft-delete a quiz
+ *     tags: [Quizzes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Quiz deleted
  */
 router.delete(
     '/:id',
@@ -82,7 +157,22 @@ router.delete(
 );
 
 /**
- * @route   POST /api/v1/quizzes/:id/attempt
+ * @openapi
+ * /quizzes/{id}/attempt:
+ *   post:
+ *     summary: Submit a quiz attempt
+ *     tags: [Quiz Attempts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: Quiz attempt submitted
  */
 router.post(
     '/:id/attempt',
@@ -94,7 +184,22 @@ router.post(
 );
 
 /**
- * @route   GET /api/v1/quizzes/:id/analytics
+ * @openapi
+ * /quizzes/{id}/analytics:
+ *   get:
+ *     summary: Get quiz analytics
+ *     tags: [Quizzes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Quiz analytics data
  */
 router.get(
     '/:id/analytics',

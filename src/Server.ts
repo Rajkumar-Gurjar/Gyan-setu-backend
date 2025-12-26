@@ -8,10 +8,8 @@ const app = express();
 
 app.use(express.json());
 
-const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./swagger.json');
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Swagger Documentation
+setupSwagger(app);
 
 const port = process.env.PORT || 3000;
 

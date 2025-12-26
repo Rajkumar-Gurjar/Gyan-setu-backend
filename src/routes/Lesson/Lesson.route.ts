@@ -21,7 +21,43 @@ import {
 const router = Router();
 
 /**
- * @route   GET /api/v1/lessons
+ * @openapi
+ * /lessons:
+ *   get:
+ *     summary: Get all lessons
+ *     tags: [Lessons]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - in: query
+ *         name: subject
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: grade
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: instructor
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of lessons
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Lesson'
  */
 router.get(
     '/',
@@ -30,7 +66,24 @@ router.get(
 );
 
 /**
- * @route   GET /api/v1/lessons/:id
+ * @openapi
+ * /lessons/{id}:
+ *   get:
+ *     summary: Get lesson by ID
+ *     tags: [Lessons]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lesson details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Lesson'
  */
 router.get(
     '/:id',
@@ -39,7 +92,20 @@ router.get(
 );
 
 /**
- * @route   POST /api/v1/lessons
+ * @openapi
+ * /lessons:
+ *   post:
+ *     summary: Create a new lesson
+ *     tags: [Lessons]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Lesson'
+ *     responses:
+ *       201:
+ *         description: Lesson created
  */
 router.post(
     '/',
@@ -48,7 +114,26 @@ router.post(
 );
 
 /**
- * @route   PUT /api/v1/lessons/:id
+ * @openapi
+ * /lessons/{id}:
+ *   put:
+ *     summary: Update an existing lesson
+ *     tags: [Lessons]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Lesson'
+ *     responses:
+ *       200:
+ *         description: Lesson updated
  */
 router.put(
     '/:id',
@@ -58,7 +143,20 @@ router.put(
 );
 
 /**
- * @route   DELETE /api/v1/lessons/:id
+ * @openapi
+ * /lessons/{id}:
+ *   delete:
+ *     summary: Delete a lesson
+ *     tags: [Lessons]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lesson deleted
  */
 router.delete(
     '/:id',
