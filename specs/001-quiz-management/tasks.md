@@ -90,33 +90,44 @@
 
 ---
 
-## Phase 5: User Story 3 - View Quiz Progress (Priority: P2)
+## Phase 5: User Story 3 - View Quiz Progress and Analytics (Priority: P2)
 
-**Goal**: Users can view their quiz results and progress.
+**Goal**: Users can view their quiz results and teachers can view analytics.
 **Independent Test**: A student can view a list of quizzes they've taken and their scores.
 
 ### Tests for User Story 3 ⚠️
 
-- [X] T025 [P] [US3] Add integration tests for progress viewing endpoints to `tests/integration/quiz.api.test.ts`.
+- [X] T025 [P] [US3] Add integration tests for progress and analytics endpoints to `tests/integration/quiz.api.test.ts`.
 
 ### Implementation for User Story 3
 
-- [X] T026 [US3] Implement service logic to retrieve a user's quiz attempts.
-- [X] T027 [US3] Implement controller and route for `GET /progress/quizzes/me`.
-- [X] T028 [US3] Implement service logic for teachers to view class analytics.
-- [X] T029 [US3] Implement controller and route for teachers to view analytics.
+- [X] T026 [US3] Implement service logic to retrieve a user's quiz attempts in `src/services/Quiz.service.ts`.
+- [X] T027 [US3] Implement controller and route for `GET /progress/quizzes/me` in `src/controller/Quiz.controller.ts` and `src/routes/Quiz/Quiz.route.ts`.
+- [X] T028 [US3] Implement service logic for teachers to view quiz analytics (aggregated stats) in `src/services/Quiz.service.ts`.
+- [X] T029 [US3] Implement controller and route for `GET /quizzes/:id/analytics` in `src/controller/Quiz.controller.ts`.
 
-**Checkpoint**: User Story 3 (Quiz Progress Viewing) should be fully functional.
+**Checkpoint**: User Story 3 (Progress and Analytics) should be fully functional.
 
 ---
 
-## Phase N: Polish & Cross-Cutting Concerns
+## Phase 6: Performance & Cross-Cutting Features (P1/P2)
 
-**Purpose**: Improvements that affect multiple user stories.
+**Purpose**: Addressing specific requirements for Rate Limiting, Observability, and Offline Sync.
 
-- [X] T030 [P] Update OpenAPI documentation with all new endpoints in `specs/001-quiz-management/contracts/openapi.yaml`.
-- [X] T031 [P] Review and refactor code for clarity, performance, and adherence to constitution.
-- [X] T032 [P] Update `README.md` if necessary with new feature information.
+- [X] T030 [P] Implement rate limiting middleware for global and user-specific limits in `src/middleware/rateLimit.middleware.ts` (RL-001, RL-002).
+- [X] T031 [P] Configure rate limiting for quiz routes in `src/routes/Quiz/Quiz.route.ts`.
+- [X] T032 [P] Implement metrics emission for quiz creation, attempts, and scores in `src/services/Quiz.service.ts` (SC-008).
+- [X] T033 [P] Update logging across `Quiz.service.ts` and `Quiz.controller.ts` to follow constitution levels (INFO, WARN, ERROR) (SC-009).
+- [X] T034 [US2] Integrate `submitQuizAttempt` with offline sync queue logic in `src/services/Quiz.service.ts` (FR-007).
+
+---
+
+## Phase N: Polish & Validation
+
+- [X] T035 [P] Update OpenAPI documentation in `specs/001-quiz-management/contracts/openapi.yaml` (T030 previously).
+- [X] T036 [P] Review and refactor code for clarity and performance (T031 previously).
+- [X] T037 [P] Update `README.md` if necessary (T032 previously).
+- [ ] T038 Final validation against all SC-00X measurable outcomes.
 
 ---
 
@@ -124,14 +135,10 @@
 
 ### Phase Dependencies
 
-- **Foundational (Phase 2)**: MUST be completed before any user story work begins.
-- **User Stories (Phase 3+)**: All depend on the Foundational phase. User Story 1 and 2 can be developed in parallel, but User Story 3 depends on User Story 2 being complete.
-
-### User Story Dependencies
-
-- **User Story 1 (P1)**: Depends only on Foundational phase.
-- **User Story 2 (P1)**: Depends only on Foundational phase. Can be developed in parallel with US1.
-- **User Story 3 (P2)**: Depends on US2 (quiz attempt data must exist to be viewed).
+- **Phase 2 (Foundational)**: MUST be completed before any user story.
+- **Phase 3 & 4 (US1 & US2)**: Core functional requirements (MVP). Can be parallel.
+- **Phase 5 (US3)**: Depends on US2 for attempt data.
+- **Phase 6 (Cross-Cutting)**: Can proceed after respective functional foundations are ready.
 
 ---
 
@@ -142,13 +149,12 @@
 1. Complete Phase 2: Foundational.
 2. Complete Phase 3: User Story 1 (Teacher CRUD).
 3. Complete Phase 4: User Story 2 (Student Submission).
-4. **STOP and VALIDATE**: Teachers can create quizzes, and students can take them. This forms the core MVP.
-5. Deploy/demo if ready.
+4. **VALIDATE**: Core quiz flow works.
 
 ### Incremental Delivery
 
-1. Complete Foundational → Foundation ready.
-2. Add User Story 1 → Test independently → Deploy/Demo.
-3. Add User Story 2 → Test independently → Deploy/Demo.
-4. Add User Story 3 → Test independently → Deploy/Demo.
-5. Each story adds value without breaking previous stories.
+1. Foundation → Foundation ready.
+2. US1 → Teacher functionality.
+3. US2 → Student functionality.
+4. US3 → Progress & Analytics.
+5. Phase 6 → Production hardening (Rate limit, Sync, Metrics).

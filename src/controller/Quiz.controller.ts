@@ -7,6 +7,7 @@
 import { Request, Response } from 'express';
 import { sendSuccess, sendError, sendNotFound } from '../utils/response.utils';
 import { QuizService } from '../services/Quiz.service';
+import { emitMetric, Metrics } from '../utils/metrics.utils';
 
 /**
  * Creates a new quiz.
@@ -18,7 +19,7 @@ export async function createQuiz(req: Request, res: Response): Promise<void> {
         const newQuiz = await QuizService.createQuiz(req.body, userId);
         sendSuccess(res, newQuiz, 201, 'Quiz created successfully');
     } catch (error: any) {
-        console.error('Error in createQuiz:', error);
+        // Logging handled in service for some cases, but controller level catch-all
         sendError(res, error.message || 'Failed to create quiz', 500);
     }
 }
@@ -32,7 +33,8 @@ export async function getAllQuizzes(req: Request, res: Response): Promise<void> 
         const quizzes = await QuizService.getAllQuizzes(req.query);
         sendSuccess(res, quizzes, 200, 'Quizzes retrieved successfully');
     } catch (error: any) {
-        console.error('Error in getAllQuizzes:', error);
+        console.error(`[ERROR] Error in getAllQuizzes: ${error.message}`);
+        emitMetric(Metrics.API_ERROR, 1, { operation: 'getAllQuizzes' });
         sendError(res, 'Failed to fetch quizzes', 500);
     }
 }
@@ -49,12 +51,14 @@ export async function getQuizById(req: Request, res: Response): Promise<void> {
         const quiz = await QuizService.getQuizById(id, userRole);
         
         if (!quiz) {
+            console.warn(`[WARN] getQuizById: Quiz ${id} not found`);
             return sendNotFound(res, 'Quiz');
         }
 
         sendSuccess(res, quiz);
-    } catch (error) {
-        console.error('Error in getQuizById:', error);
+    } catch (error: any) {
+        console.error(`[ERROR] Error in getQuizById: ${error.message}`);
+        emitMetric(Metrics.API_ERROR, 1, { operation: 'getQuizById', quizId: req.params.id });
         sendError(res, 'Failed to fetch quiz', 500);
     }
 }
@@ -69,12 +73,14 @@ export async function updateQuiz(req: Request, res: Response): Promise<void> {
         const updatedQuiz = await QuizService.updateQuiz(id, req.body);
         
         if (!updatedQuiz) {
+            // Warn log handled in service
             return sendNotFound(res, 'Quiz');
         }
 
         sendSuccess(res, updatedQuiz, 200, 'Quiz updated successfully');
     } catch (error: any) {
-        console.error('Error in updateQuiz:', error);
+        console.error(`[ERROR] Error in updateQuiz: ${error.message}`);
+        emitMetric(Metrics.API_ERROR, 1, { operation: 'updateQuiz', quizId: req.params.id });
         sendError(res, error.message || 'Failed to update quiz', 500);
     }
 }
@@ -89,12 +95,14 @@ export async function deleteQuiz(req: Request, res: Response): Promise<void> {
         const deletedQuiz = await QuizService.deleteQuiz(id);
         
         if (!deletedQuiz) {
+            // Warn log handled in service
             return sendNotFound(res, 'Quiz');
         }
 
         sendSuccess(res, null, 200, 'Quiz deleted successfully');
     } catch (error: any) {
-        console.error('Error in deleteQuiz:', error);
+        console.error(`[ERROR] Error in deleteQuiz: ${error.message}`);
+        emitMetric(Metrics.API_ERROR, 1, { operation: 'deleteQuiz', quizId: req.params.id });
         sendError(res, 'Failed to delete quiz', 500);
     }
 }
@@ -119,7 +127,7 @@ export async function submitQuizAttempt(req: Request, res: Response): Promise<vo
         if (error.message === 'Quiz not found') {
             return sendNotFound(res, 'Quiz');
         }
-        console.error('Error in submitQuizAttempt:', error);
+        // Error logging handled in service
         sendError(res, 'Failed to submit quiz attempt', 500);
     }
 }
@@ -138,7 +146,8 @@ export async function getMyQuizAttempts(req: Request, res: Response): Promise<vo
         const attempts = await QuizService.getUserQuizAttempts(userId);
         sendSuccess(res, attempts, 200, 'Quiz attempts retrieved successfully');
     } catch (error: any) {
-        console.error('Error in getMyQuizAttempts:', error);
+        console.error(`[ERROR] Error in getMyQuizAttempts: ${error.message}`);
+        emitMetric(Metrics.API_ERROR, 1, { operation: 'getMyQuizAttempts', userId: (req as any).user?.id });
         sendError(res, 'Failed to fetch quiz attempts', 500);
     }
 }
@@ -156,7 +165,8 @@ export async function getQuizAnalytics(req: Request, res: Response): Promise<voi
         if (error.message === 'Quiz not found') {
             return sendNotFound(res, 'Quiz');
         }
-        console.error('Error in getQuizAnalytics:', error);
+        console.error(`[ERROR] Error in getQuizAnalytics: ${error.message}`);
+        emitMetric(Metrics.API_ERROR, 1, { operation: 'getQuizAnalytics', quizId: req.params.id });
         sendError(res, 'Failed to fetch quiz analytics', 500);
     }
 }

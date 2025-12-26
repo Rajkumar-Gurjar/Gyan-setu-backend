@@ -63,7 +63,9 @@ export const submitQuizAttemptSchema = z.object({
         questionId: mongoIdSchema,
         selectedOption: mongoIdSchema.optional(),
         answer: z.string().optional()
-    })).min(1, "At least one answer is required")
+    })).min(1, "At least one answer is required"),
+    startedAt: z.string().datetime().optional(),
+    clientTimestamp: z.string().datetime().optional()
 });
 
 
