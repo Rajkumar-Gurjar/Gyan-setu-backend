@@ -5,9 +5,11 @@ import {
     getQuizById,
     updateQuiz,
     deleteQuiz,
-    submitQuizAttempt
+    submitQuizAttempt,
+    getQuizAnalytics
 } from '../../controller/Quiz.controller';
 import { validate } from '../../middleware/validation.middleware';
+import { authenticate, authorize } from '../../middleware/auth.middleware';
 import {
     createQuizSchema,
     updateQuizSchema,
@@ -23,6 +25,7 @@ const router = Router();
  */
 router.get(
     '/',
+    authenticate,
     // validate(paginationQuerySchema, 'query'), // Will be added later with pagination
     getAllQuizzes
 );
@@ -32,6 +35,7 @@ router.get(
  */
 router.get(
     '/:id',
+    authenticate,
     validate(idParamSchema, 'params'),
     getQuizById
 );
@@ -41,6 +45,8 @@ router.get(
  */
 router.post(
     '/',
+    authenticate,
+    authorize(['teacher', 'admin']),
     validate(createQuizSchema, 'body'),
     createQuiz
 );
@@ -50,6 +56,8 @@ router.post(
  */
 router.patch(
     '/:id',
+    authenticate,
+    authorize(['teacher', 'admin']),
     validate(idParamSchema, 'params'),
     validate(updateQuizSchema, 'body'),
     updateQuiz
@@ -60,6 +68,8 @@ router.patch(
  */
 router.delete(
     '/:id',
+    authenticate,
+    authorize(['teacher', 'admin']),
     validate(idParamSchema, 'params'),
     deleteQuiz
 );
@@ -69,9 +79,21 @@ router.delete(
  */
 router.post(
     '/:id/attempt',
+    authenticate,
     validate(idParamSchema, 'params'),
     validate(submitQuizAttemptSchema, 'body'),
     submitQuizAttempt
+);
+
+/**
+ * @route   GET /api/v1/quizzes/:id/analytics
+ */
+router.get(
+    '/:id/analytics',
+    authenticate,
+    authorize(['teacher', 'admin']),
+    validate(idParamSchema, 'params'),
+    getQuizAnalytics
 );
 
 export default router;

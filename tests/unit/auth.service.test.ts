@@ -92,6 +92,7 @@ describe('AuthService', () => {
       loginAttempts: number;
       lockUntil: Date | null;
       save: jest.Mock;
+      toObject: jest.Mock;
     } = {
       _id: 'userId',
       email: loginData.email,
@@ -99,6 +100,7 @@ describe('AuthService', () => {
       loginAttempts: 0,
       lockUntil: null,
       save: jest.fn().mockResolvedValue(true),
+      toObject: jest.fn().mockReturnThis(),
     };
 
     beforeEach(() => {
@@ -107,16 +109,18 @@ describe('AuthService', () => {
         });
         mockUser.loginAttempts = 0;
         mockUser.lockUntil = null;
+        mockUser.toObject.mockReturnValue({ ...mockUser });
     });
 
     it('should return tokens for a valid login', async () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       (jwt.sign as jest.Mock).mockReturnValue('sometoken');
 
-      const tokens = await AuthService.login(loginData);
+      const result = await AuthService.login(loginData);
 
-      expect(tokens).toHaveProperty('accessToken');
-      expect(tokens).toHaveProperty('refreshToken');
+      expect(result.tokens).toHaveProperty('accessToken');
+      expect(result.tokens).toHaveProperty('refreshToken');
+      expect(result.user).toHaveProperty('email', loginData.email);
       expect(mockUser.save).toHaveBeenCalled();
     });
 

@@ -96,13 +96,13 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T022 [P] [US3] Add integration tests for refresh token to `tests/integration/auth.api.test.ts`
+- [X] T022 [P] [US3] Add integration tests for refresh token to `tests/integration/auth.api.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Implement token refresh logic in `src/services/Auth.service.ts`
-- [ ] T024 [US3] Implement `refresh` controller method in `src/controller/Auth.controller.ts`
-- [ ] T025 [US3] Map refresh route in `src/routes/Auth/Auth.route.ts`
+- [X] T023 [US3] Implement token refresh logic in `src/services/Auth.service.ts`
+- [X] T024 [US3] Implement `refresh` controller method in `src/controller/Auth.controller.ts`
+- [X] T025 [US3] Map refresh route in `src/routes/Auth/Auth.route.ts`
 
 **Checkpoint**: All core authentication stories functional.
 
@@ -110,8 +110,8 @@
 
 ## Phase N: Polish & Cross-Cutting Concerns
 
-- [ ] T026 [P] Document auth endpoints in `specs/002-student-auth/contracts/openapi.yaml`
-- [ ] T027 [P] Add error handling for JWT expiration in middleware
+- [X] T026 [P] Document auth endpoints in `specs/002-student-auth/contracts/openapi.yaml`
+- [X] T027 [P] Add error handling for JWT expiration in middleware
 - [ ] T028 Final code review and cleanup against constitution principles
 
 ---

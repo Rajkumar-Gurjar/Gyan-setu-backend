@@ -135,7 +135,35 @@ class AuthService {
     const auditLog = new AuditLog({ userId: user._id, action: 'LOGIN_SUCCESS' });
     await auditLog.save();
 
-    return tokens;
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    delete userResponse.refreshToken;
+
+    return { tokens, user: userResponse };
+  }
+
+  /**
+   * Refreshes the access token using a refresh token.
+   * @param refreshToken The refresh token.
+   * @returns A new access token.
+   */
+  public async refresh(refreshToken: string): Promise<string> {
+    try {
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'your_jwt_refresh_secret') as { id: string };
+      
+      const user = await User.findById(decoded.id).select('+refreshToken');
+      if (!user || user.refreshToken !== refreshToken) {
+        throw new Error('Invalid refresh token');
+      }
+
+      const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'your_jwt_secret', {
+        expiresIn: '15m',
+      });
+
+      return accessToken;
+    } catch (error) {
+      throw new Error('Invalid refresh token');
+    }
   }
 }
 

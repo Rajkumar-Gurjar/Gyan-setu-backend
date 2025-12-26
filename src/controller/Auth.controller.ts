@@ -25,8 +25,8 @@ class AuthController {
 
   public async login(req: Request, res: Response): Promise<void> {
     try {
-      const tokens = await AuthService.login(req.body as LoginBody);
-      sendSuccess(res, tokens, 200, 'User logged in successfully');
+      const data = await AuthService.login(req.body as LoginBody);
+      sendSuccess(res, data, 200, 'User logged in successfully');
     } catch (error: any) {
       if (error.message === 'Invalid credentials') {
         sendError(res, error.message, 401);
@@ -39,8 +39,17 @@ class AuthController {
   }
 
   public async refresh(req: Request, res: Response): Promise<void> {
-    // Implementation to be added in a future task
-    sendSuccess(res, { message: 'Token refreshed successfully' }, 200);
+    try {
+      const { refreshToken } = req.body;
+      if (!refreshToken) {
+        sendError(res, 'Refresh token is required', 400);
+        return;
+      }
+      const accessToken = await AuthService.refresh(refreshToken);
+      sendSuccess(res, { accessToken }, 200, 'Token refreshed successfully');
+    } catch (error: any) {
+      sendError(res, error.message || 'Failed to refresh token', 401);
+    }
   }
 }
 

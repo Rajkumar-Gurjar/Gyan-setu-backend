@@ -49,21 +49,21 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T007 [P] [US1] Create integration test file `quiz.api.test.ts` in `tests/integration/` for Quiz CRUD endpoints.
-- [ ] T008 [P] [US1] Create unit test file `quiz.service.test.ts` in `tests/unit/` for quiz creation logic.
+- [X] T007 [P] [US1] Create integration test file `quiz.api.test.ts` in `tests/integration/` for Quiz CRUD endpoints.
+- [X] T008 [P] [US1] Create unit test file `quiz.service.test.ts` in `tests/unit/` for quiz creation logic.
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Implement the `Quiz` schema in `src/models/quiz/Quiz.model.ts` based on `data-model.md`.
-- [ ] T010 [P] [US1] Implement Zod schemas for `createQuiz` and `updateQuiz` in `src/validation/schemas/Quiz.schema.ts`.
-- [ ] T011 [US1] Implement `createQuiz` service logic in `src/services/Quiz.service.ts`.
-- [ ] T012 [US1] Implement `createQuiz` controller and link to route in `src/controller/Quiz.controller.ts` and `src/routes/Quiz/Quiz.route.ts`. (Endpoint: `POST /quizzes`)
-- [ ] T013 [US1] Implement `getQuizById` service logic in `src/services/Quiz.service.ts`.
-- [ ] T014 [US1] Implement `getQuizById` controller and link to route. (Endpoint: `GET /quizzes/:id`)
-- [ ] T015 [US1] Implement `updateQuiz` service logic in `src/services/Quiz.service.ts`.
-- [ ] T016 [US1] Implement `updateQuiz` controller and link to route. (Endpoint: `PATCH /quizzes/:id`)
-- [ ] T017 [US1] Implement `deleteQuiz` (soft delete) service logic in `src/services/Quiz.service.ts`.
-- [ ] T018 [US1] Implement `deleteQuiz` controller and link to route. (Endpoint: `DELETE /quizzes/:id`)
+- [X] T009 [P] [US1] Implement the `Quiz` schema in `src/models/quiz/Quiz.model.ts` based on `data-model.md`.
+- [X] T010 [P] [US1] Implement Zod schemas for `createQuiz` and `updateQuiz` in `src/validation/schemas/Quiz.schema.ts`.
+- [X] T011 [US1] Implement `createQuiz` service logic in `src/services/Quiz.service.ts`.
+- [X] T012 [US1] Implement `createQuiz` controller and link to route in `src/controller/Quiz.controller.ts` and `src/routes/Quiz/Quiz.route.ts`. (Endpoint: `POST /quizzes`)
+- [X] T013 [US1] Implement `getQuizById` service logic in `src/services/Quiz.service.ts`.
+- [X] T014 [US1] Implement `getQuizById` controller and link to route. (Endpoint: `GET /quizzes/:id`)
+- [X] T015 [US1] Implement `updateQuiz` service logic in `src/services/Quiz.service.ts`.
+- [X] T016 [US1] Implement `updateQuiz` controller and link to route. (Endpoint: `PATCH /quizzes/:id`)
+- [X] T017 [US1] Implement `deleteQuiz` (soft delete) service logic in `src/services/Quiz.service.ts`.
+- [X] T018 [US1] Implement `deleteQuiz` controller and link to route. (Endpoint: `DELETE /quizzes/:id`)
 
 **Checkpoint**: User Story 1 (Quiz CRUD for Teachers) should be fully functional and testable independently.
 
@@ -97,14 +97,14 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T025 [P] [US3] Add integration tests for progress viewing endpoints to `tests/integration/quiz.api.test.ts`.
+- [X] T025 [P] [US3] Add integration tests for progress viewing endpoints to `tests/integration/quiz.api.test.ts`.
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Implement service logic to retrieve a user's quiz attempts.
-- [ ] T027 [US3] Implement controller and route for `GET /progress/quizzes/me`.
-- [ ] T028 [US3] Implement service logic for teachers to view class analytics.
-- [ ] T029 [US3] Implement controller and route for teachers to view analytics.
+- [X] T026 [US3] Implement service logic to retrieve a user's quiz attempts.
+- [X] T027 [US3] Implement controller and route for `GET /progress/quizzes/me`.
+- [X] T028 [US3] Implement service logic for teachers to view class analytics.
+- [X] T029 [US3] Implement controller and route for teachers to view analytics.
 
 **Checkpoint**: User Story 3 (Quiz Progress Viewing) should be fully functional.
 
@@ -114,9 +114,9 @@
 
 **Purpose**: Improvements that affect multiple user stories.
 
-- [ ] T030 [P] Update OpenAPI documentation with all new endpoints in `specs/001-quiz-management/contracts/openapi.yaml`.
-- [ ] T031 [P] Review and refactor code for clarity, performance, and adherence to constitution.
-- [ ] T032 [P] Update `README.md` if necessary with new feature information.
+- [X] T030 [P] Update OpenAPI documentation with all new endpoints in `specs/001-quiz-management/contracts/openapi.yaml`.
+- [X] T031 [P] Review and refactor code for clarity, performance, and adherence to constitution.
+- [X] T032 [P] Update `README.md` if necessary with new feature information.
 
 ---
 

@@ -134,6 +134,53 @@ paths:
         '403':
           description: "Forbidden (e.g., max attempts exceeded)"
 
+  /progress/quizzes/me:
+    get:
+      summary: "Get current student's quiz attempts"
+      tags:
+        - Quiz Progress
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "List of quiz attempts"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuizAttemptResult'
+        '401':
+          description: "Unauthorized"
+
+  /quizzes/{id}/analytics:
+    get:
+      summary: "Get aggregated analytics for a quiz (Teacher/Admin)"
+      tags:
+        - Quizzes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: objectId
+      responses:
+        '200':
+          description: "Aggregated analytics data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizAnalytics'
+        '401':
+          description: "Unauthorized"
+        '403':
+          description: "Forbidden (User is not a Teacher/Admin)"
+        '404':
+          description: "Quiz not found"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -293,3 +340,32 @@ components:
                 type: string
               explanation:
                 $ref: '#/components/schemas/MultilingualString'
+
+    QuizAnalytics:
+      type: object
+      properties:
+        quizId:
+          type: string
+          format: objectId
+        totalAttempts:
+          type: integer
+        uniqueStudents:
+          type: integer
+        averageScore:
+          type: number
+        passRate:
+          type: number
+        questionStats:
+          type: array
+          items:
+            type: object
+            properties:
+              questionId:
+                type: string
+                format: objectId
+              correctCount:
+                type: integer
+              attemptCount:
+                type: integer
+              correctPercentage:
+                type: number
