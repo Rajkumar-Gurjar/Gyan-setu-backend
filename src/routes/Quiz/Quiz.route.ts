@@ -5,7 +5,8 @@ import {
     getQuizById,
     updateQuiz,
     deleteQuiz,
-    submitQuizAttempt
+    submitQuizAttempt,
+    getQuizAnalytics
 } from '../../controller/Quiz.controller';
 import { validate } from '../../middleware/validation.middleware';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
@@ -82,6 +83,17 @@ router.post(
     validate(idParamSchema, 'params'),
     validate(submitQuizAttemptSchema, 'body'),
     submitQuizAttempt
+);
+
+/**
+ * @route   GET /api/v1/quizzes/:id/analytics
+ */
+router.get(
+    '/:id/analytics',
+    authenticate,
+    authorize(['teacher', 'admin']),
+    validate(idParamSchema, 'params'),
+    getQuizAnalytics
 );
 
 export default router;

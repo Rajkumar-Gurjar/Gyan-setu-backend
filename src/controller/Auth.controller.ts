@@ -25,8 +25,8 @@ class AuthController {
 
   public async login(req: Request, res: Response): Promise<void> {
     try {
-      const tokens = await AuthService.login(req.body as LoginBody);
-      sendSuccess(res, tokens, 200, 'User logged in successfully');
+      const data = await AuthService.login(req.body as LoginBody);
+      sendSuccess(res, data, 200, 'User logged in successfully');
     } catch (error: any) {
       if (error.message === 'Invalid credentials') {
         sendError(res, error.message, 401);

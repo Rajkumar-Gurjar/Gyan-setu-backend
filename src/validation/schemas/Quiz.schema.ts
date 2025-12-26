@@ -31,26 +31,29 @@ const questionSchema = z.object({
 
 /**
  * Schema for creating a new quiz.
- * This will be fully implemented in a later task (T010).
  */
 export const createQuizSchema = z.object({
-    // Placeholder: Body will be defined in T010
-    body: z.object({
-        title: multilingualSchema,
-        subject: z.string(),
-        class: z.number().min(1).max(12),
-        // ... other fields will be added
-    })
+    title: multilingualSchema,
+    description: multilingualSchema.optional(),
+    lessonId: mongoIdSchema.optional(),
+    subject: z.string(),
+    class: z.number().min(1).max(12),
+    type: z.enum(['practice', 'assessment', 'certification']).optional(),
+    timeLimit: z.number().optional(),
+    passingScore: z.number().min(0).max(100).optional(),
+    attemptsAllowed: z.number().optional(),
+    shuffleQuestions: z.boolean().optional(),
+    shuffleOptions: z.boolean().optional(),
+    showCorrectAnswers: z.boolean().optional(),
+    showScoreImmediately: z.boolean().optional(),
+    questions: z.array(questionSchema).min(1, "At least one question is required"),
+    isPublished: z.boolean().optional(),
 });
 
 /**
  * Schema for updating an existing quiz.
- * This will be fully implemented in a later task (T010).
  */
-export const updateQuizSchema = z.object({
-    // Placeholder: Body will be defined in T010
-    body: createQuizSchema.partial()
-});
+export const updateQuizSchema = createQuizSchema.partial();
 
 /**
  * Schema for submitting a quiz attempt.

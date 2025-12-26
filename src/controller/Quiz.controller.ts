@@ -9,41 +9,42 @@ import { sendSuccess, sendError, sendNotFound } from '../utils/response.utils';
 import { QuizService } from '../services/Quiz.service';
 
 /**
- * Placeholder for creating a new quiz.
+ * Creates a new quiz.
  * @route POST /api/v1/quizzes
  */
 export async function createQuiz(req: Request, res: Response): Promise<void> {
     try {
-        // Implementation for T012 will go here
-        sendSuccess(res, { message: "createQuiz placeholder" }, 201);
-    } catch (error) {
+        const userId = (req as any).user?.id;
+        const newQuiz = await QuizService.createQuiz(req.body, userId);
+        sendSuccess(res, newQuiz, 201, 'Quiz created successfully');
+    } catch (error: any) {
         console.error('Error in createQuiz:', error);
-        sendError(res, 'Failed to create quiz', 500);
+        sendError(res, error.message || 'Failed to create quiz', 500);
     }
 }
 
 /**
- * Placeholder for getting all quizzes.
+ * Retrieves all quizzes.
  * @route GET /api/v1/quizzes
  */
 export async function getAllQuizzes(req: Request, res: Response): Promise<void> {
     try {
-        // Implementation will be added later
-        sendSuccess(res, { quizzes: [], pagination: {} });
-    } catch (error) {
+        const quizzes = await QuizService.getAllQuizzes(req.query);
+        sendSuccess(res, quizzes, 200, 'Quizzes retrieved successfully');
+    } catch (error: any) {
         console.error('Error in getAllQuizzes:', error);
         sendError(res, 'Failed to fetch quizzes', 500);
     }
 }
 
 /**
- * Placeholder for getting a single quiz by ID.
+ * Retrieves a single quiz by ID.
  * @route GET /api/v1/quizzes/:id
  */
 export async function getQuizById(req: Request, res: Response): Promise<void> {
     try {
         const { id } = req.params;
-        const userRole = (req as any).user?.role || 'student'; // Default to student for safety
+        const userRole = (req as any).user?.role || 'student';
         
         const quiz = await QuizService.getQuizById(id, userRole);
         
@@ -59,30 +60,40 @@ export async function getQuizById(req: Request, res: Response): Promise<void> {
 }
 
 /**
- * Placeholder for updating an existing quiz.
+ * Updates an existing quiz.
  * @route PATCH /api/v1/quizzes/:id
  */
 export async function updateQuiz(req: Request, res: Response): Promise<void> {
     try {
         const { id } = req.params;
-        // Implementation for T016 will go here
-        sendSuccess(res, { message: `updateQuiz placeholder for id: ${id}` });
-    } catch (error) {
+        const updatedQuiz = await QuizService.updateQuiz(id, req.body);
+        
+        if (!updatedQuiz) {
+            return sendNotFound(res, 'Quiz');
+        }
+
+        sendSuccess(res, updatedQuiz, 200, 'Quiz updated successfully');
+    } catch (error: any) {
         console.error('Error in updateQuiz:', error);
-        sendError(res, 'Failed to update quiz', 500);
+        sendError(res, error.message || 'Failed to update quiz', 500);
     }
 }
 
 /**
- * Placeholder for deleting a quiz.
+ * Deletes a quiz.
  * @route DELETE /api/v1/quizzes/:id
  */
 export async function deleteQuiz(req: Request, res: Response): Promise<void> {
     try {
         const { id } = req.params;
-        // Implementation for T018 will go here
-        sendSuccess(res, null, 200, `deleteQuiz placeholder for id: ${id}`);
-    } catch (error) {
+        const deletedQuiz = await QuizService.deleteQuiz(id);
+        
+        if (!deletedQuiz) {
+            return sendNotFound(res, 'Quiz');
+        }
+
+        sendSuccess(res, null, 200, 'Quiz deleted successfully');
+    } catch (error: any) {
         console.error('Error in deleteQuiz:', error);
         sendError(res, 'Failed to delete quiz', 500);
     }
@@ -129,5 +140,23 @@ export async function getMyQuizAttempts(req: Request, res: Response): Promise<vo
     } catch (error: any) {
         console.error('Error in getMyQuizAttempts:', error);
         sendError(res, 'Failed to fetch quiz attempts', 500);
+    }
+}
+
+/**
+ * Retrieves analytics for a specific quiz.
+ * @route GET /api/v1/quizzes/:id/analytics
+ */
+export async function getQuizAnalytics(req: Request, res: Response): Promise<void> {
+    try {
+        const { id } = req.params;
+        const analytics = await QuizService.getQuizAnalytics(id);
+        sendSuccess(res, analytics, 200, 'Quiz analytics retrieved successfully');
+    } catch (error: any) {
+        if (error.message === 'Quiz not found') {
+            return sendNotFound(res, 'Quiz');
+        }
+        console.error('Error in getQuizAnalytics:', error);
+        sendError(res, 'Failed to fetch quiz analytics', 500);
     }
 }

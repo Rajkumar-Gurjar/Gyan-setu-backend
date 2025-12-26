@@ -135,7 +135,11 @@ class AuthService {
     const auditLog = new AuditLog({ userId: user._id, action: 'LOGIN_SUCCESS' });
     await auditLog.save();
 
-    return tokens;
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    delete userResponse.refreshToken;
+
+    return { tokens, user: userResponse };
   }
 
   /**

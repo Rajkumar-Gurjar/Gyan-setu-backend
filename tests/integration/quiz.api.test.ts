@@ -4,11 +4,12 @@ import { QuizModel } from '../../src/models/quiz/Quiz.model';
 import { LessonModel } from '../../src/models/lesson/Lesson.model';
 import User from '../../src/models/User.model';
 import School from '../../src/models/School.model';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 describe('Quiz API Integration Tests', () => {
   let studentToken: string;
+  let teacherToken: string;
   let teacherId: string;
   let quizId: string;
 
@@ -32,17 +33,20 @@ describe('Quiz API Integration Tests', () => {
     await School.create({ name: 'Quiz School', schoolCode: 'QUIZ123' });
 
     // 2. Create Teacher
-    const hashedPassword = await bcrypt.hash('password123', 10);
-    const teacher = await User.create({
+    const teacherData = {
        firstName: 'Teacher',
        lastName: 'One',
        email: 'teacher@example.com',
-       password: hashedPassword,
-       role: 'teacher',
-       isVerified: true,
-       profile: { firstName: 'Teacher', lastName: 'One', language: 'en' }
-    });
-    teacherId = teacher._id.toString();
+       password: 'password123',
+       schoolCode: 'QUIZ123',
+       role: 'teacher'
+    };
+    await request(app).post('/api/v1/auth/register').send(teacherData);
+    const tLoginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: teacherData.email, password: teacherData.password });
+    teacherToken = tLoginRes.body.data.tokens.accessToken;
+    teacherId = tLoginRes.body.data.user._id;
 
     // 3. Register & Login Student
     const studentData = {
@@ -64,7 +68,7 @@ describe('Quiz API Integration Tests', () => {
     if (loginRes.statusCode !== 200) {
         console.error('Login failed:', loginRes.statusCode, loginRes.body);
     }
-    studentToken = loginRes.body.data?.accessToken;
+    studentToken = loginRes.body.data?.tokens?.accessToken;
     if (!studentToken) {
         console.error('No student token received. Body:', JSON.stringify(loginRes.body));
     }
@@ -95,7 +99,7 @@ describe('Quiz API Integration Tests', () => {
         shuffleQuestions: false,
         shuffleOptions: false,
         isPublished: true,
-        createdBy: teacher._id,
+        createdBy: new Types.ObjectId(teacherId),
         totalPoints: 1,
         questions: [
             {
@@ -118,6 +122,75 @@ describe('Quiz API Integration Tests', () => {
     await LessonModel.deleteMany({});
     await User.deleteMany({});
     await School.deleteMany({});
+  });
+
+  describe('CRUD /api/v1/quizzes', () => {
+    it('should create a new quiz', async () => {
+        const quizData = {
+            title: { en: 'New Quiz' },
+            subject: 'Science',
+            class: 9,
+            questions: [
+                {
+                    type: 'true_false',
+                    question: { en: 'Is Earth round?' },
+                    options: [
+                        { text: { en: 'True' }, isCorrect: true },
+                        { text: { en: 'False' }, isCorrect: false }
+                    ],
+                    points: 5
+                }
+            ]
+        };
+
+        const res = await request(app)
+            .post('/api/v1/quizzes')
+            .set('Authorization', `Bearer ${teacherToken}`)
+            .send(quizData);
+
+        expect(res.statusCode).toEqual(201);
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.title.en).toBe('New Quiz');
+        expect(res.body.data.totalPoints).toBe(5);
+    });
+
+    it('should get all quizzes', async () => {
+        const res = await request(app)
+            .get('/api/v1/quizzes')
+            .set('Authorization', `Bearer ${teacherToken}`);
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.success).toBe(true);
+        expect(Array.isArray(res.body.data)).toBe(true);
+        expect(res.body.data.length).toBeGreaterThan(0);
+    });
+
+    it('should update a quiz', async () => {
+        const updateData = {
+            title: { en: 'Updated Quiz Title' }
+        };
+
+        const res = await request(app)
+            .patch(`/api/v1/quizzes/${quizId}`)
+            .set('Authorization', `Bearer ${teacherToken}`)
+            .send(updateData);
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.title.en).toBe('Updated Quiz Title');
+    });
+
+    it('should delete a quiz', async () => {
+        const res = await request(app)
+            .delete(`/api/v1/quizzes/${quizId}`)
+            .set('Authorization', `Bearer ${teacherToken}`);
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.success).toBe(true);
+
+        const deletedQuiz = await QuizModel.findById(quizId);
+        expect(deletedQuiz!.isDeleted).toBe(true);
+    });
   });
 
   describe('POST /api/v1/quizzes/:id/attempt', () => {
@@ -236,6 +309,27 @@ describe('Quiz API Integration Tests', () => {
     it('should return 401 if not authenticated', async () => {
         const res = await request(app).get('/api/v1/progress/quizzes/me');
         expect(res.statusCode).toEqual(401);
+    });
+  });
+
+  describe('GET /api/v1/quizzes/:id/analytics', () => {
+    it('should return analytics for a teacher', async () => {
+        const res = await request(app)
+            .get(`/api/v1/quizzes/${quizId}/analytics`)
+            .set('Authorization', `Bearer ${teacherToken}`);
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.data).toHaveProperty('totalAttempts');
+        expect(res.body.data).toHaveProperty('averageScore');
+    });
+
+    it('should return 403 for a student trying to access analytics', async () => {
+        const res = await request(app)
+            .get(`/api/v1/quizzes/${quizId}/analytics`)
+            .set('Authorization', `Bearer ${studentToken}`);
+
+        expect(res.statusCode).toEqual(403);
     });
   });
 });

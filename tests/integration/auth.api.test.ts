@@ -104,8 +104,9 @@ describe('Auth API', () => {
 
       expect(res.statusCode).toEqual(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.data).toHaveProperty('accessToken');
-      expect(res.body.data).toHaveProperty('refreshToken');
+      expect(res.body.data.tokens).toHaveProperty('accessToken');
+      expect(res.body.data.tokens).toHaveProperty('refreshToken');
+      expect(res.body.data.user).toHaveProperty('email', registrationData.email);
     });
 
     it('should return 401 for an unregistered user', async () => {
@@ -171,7 +172,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
         .send({ email: registrationData.email, password: registrationData.password });
-      refreshToken = res.body.data.refreshToken;
+      refreshToken = res.body.data.tokens.refreshToken;
     });
 
     it('should refresh the access token with a valid refresh token and return 200', async () => {
