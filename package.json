@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "node --watch --env-file=.env --import=tsx src/Server.ts",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^2.0.76",

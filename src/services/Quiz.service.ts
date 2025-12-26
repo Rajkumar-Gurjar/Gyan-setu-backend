@@ -26,10 +26,30 @@ export const QuizService = {
     /**
      * Placeholder for fetching a single quiz by ID.
      */
-    async getQuizById(quizId: string | Types.ObjectId): Promise<IQuiz | null> {
-        console.log('getQuizById placeholder called with:', quizId);
-        // Implementation for T013 will go here
-        return null;
+    async getQuizById(quizId: string | Types.ObjectId, userRole: string = 'teacher'): Promise<IQuiz | null> {
+        const quiz = await QuizModel.findById(quizId);
+        
+        if (!quiz || quiz.isDeleted) {
+            return null;
+        }
+
+        // If student, filter out correct answers and internal fields
+        if (userRole === 'student') {
+            const quizObj = quiz.toObject();
+            quizObj.questions = quizObj.questions.map((q: any) => {
+                const { correctAnswer, explanation, ...rest } = q;
+                if (q.options) {
+                    rest.options = q.options.map((o: any) => {
+                        const { isCorrect, ...optRest } = o;
+                        return optRest;
+                    });
+                }
+                return rest;
+            });
+            return quizObj as any;
+        }
+
+        return quiz;
     },
 
     /**
@@ -48,5 +68,69 @@ export const QuizService = {
         console.log('deleteQuiz placeholder called with:', quizId);
         // Implementation for T017 will go here
         return null;
+    },
+
+    /**
+     * Processes a quiz submission, calculates score, and records the attempt.
+     */
+    async submitQuizAttempt(quizId: string, userId: string, submissionData: { 
+        answers: Array<{ questionId: string, selectedOption?: string, answer?: string }> 
+    }) {
+        const quiz = await QuizModel.findById(quizId);
+        if (!quiz) {
+            throw new Error('Quiz not found');
+        }
+
+        let score = 0;
+        const results = quiz.questions.map(question => {
+            const userAnswer = submissionData.answers.find(a => a.questionId === question._id.toString());
+            let isCorrect = false;
+            let pointsEarned = 0;
+
+            if (userAnswer) {
+                if (question.type === 'multiple_choice' || question.type === 'true_false' || question.type === 'image_choice') {
+                    const selectedOption = question.options.find(o => o._id.toString() === userAnswer.selectedOption);
+                    if (selectedOption && selectedOption.isCorrect) {
+                        isCorrect = true;
+                        pointsEarned = question.points;
+                    }
+                } else if (question.type === 'fill_blank') {
+                    // Simple case-insensitive match for fill-in-the-blank
+                    if (userAnswer.answer?.trim().toLowerCase() === question.correctAnswer?.en.trim().toLowerCase()) {
+                        isCorrect = true;
+                        pointsEarned = question.points;
+                    }
+                }
+            }
+
+            if (isCorrect) {
+                score += pointsEarned;
+            }
+
+            return {
+                questionId: question._id,
+                isCorrect,
+                pointsEarned,
+                explanation: question.explanation
+            };
+        });
+
+        const totalPoints = quiz.totalPoints || quiz.questions.reduce((sum, q) => sum + (q.points || 0), 0);
+        const percentage = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
+        const passed = percentage >= quiz.passingScore;
+
+        // Note: Actual recording to a Progress model would happen here in a real implementation.
+        // For now, we return the result as specified.
+
+        return {
+            quizId,
+            userId,
+            score,
+            totalPoints,
+            percentage,
+            passed,
+            results,
+            submittedAt: new Date()
+        };
     },
 };

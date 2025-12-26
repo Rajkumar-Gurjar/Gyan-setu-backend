@@ -4,12 +4,14 @@ import {
     getAllQuizzes,
     getQuizById,
     updateQuiz,
-    deleteQuiz
+    deleteQuiz,
+    submitQuizAttempt
 } from '../../controller/Quiz.controller';
 import { validate } from '../../middleware/validation.middleware';
 import {
     createQuizSchema,
-    updateQuizSchema
+    updateQuizSchema,
+    submitQuizAttemptSchema
 } from '../../validation/schemas/Quiz.schema';
 import { idParamSchema } from '../../validation/schemas/common.schema';
 
@@ -60,6 +62,16 @@ router.delete(
     '/:id',
     validate(idParamSchema, 'params'),
     deleteQuiz
+);
+
+/**
+ * @route   POST /api/v1/quizzes/:id/attempt
+ */
+router.post(
+    '/:id/attempt',
+    validate(idParamSchema, 'params'),
+    validate(submitQuizAttemptSchema, 'body'),
+    submitQuizAttempt
 );
 
 export default router;

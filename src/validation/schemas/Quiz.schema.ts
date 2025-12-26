@@ -52,6 +52,17 @@ export const updateQuizSchema = z.object({
     body: createQuizSchema.partial()
 });
 
+/**
+ * Schema for submitting a quiz attempt.
+ */
+export const submitQuizAttemptSchema = z.object({
+    answers: z.array(z.object({
+        questionId: mongoIdSchema,
+        selectedOption: mongoIdSchema.optional(),
+        answer: z.string().optional()
+    })).min(1, "At least one answer is required")
+});
+
 
 // Placeholder Type Definitions
 export type CreateQuizDTO = z.infer<typeof createQuizSchema>;

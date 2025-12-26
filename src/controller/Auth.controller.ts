@@ -18,7 +18,7 @@ class AuthController {
       } else if (error.message === 'User with this email already exists') {
         sendError(res, error.message, 409);
       } else {
-        sendError(res, 'Failed to register user', 500);
+        sendError(res, error.message || 'Failed to register user', 500);
       }
     }
   }

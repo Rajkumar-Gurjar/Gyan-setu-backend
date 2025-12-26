@@ -76,15 +76,15 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T019 [P] [US2] Add integration tests for quiz submission endpoint to `tests/integration/quiz.api.test.ts`.
-- [ ] T020 [P] [US2] Add unit tests for quiz submission and scoring logic to `tests/unit/quiz.service.test.ts`.
+- [X] T019 [P] [US2] Add integration tests for quiz submission endpoint to `tests/integration/quiz.api.test.ts`.
+- [X] T020 [P] [US2] Add unit tests for quiz submission and scoring logic to `tests/unit/quiz.service.test.ts`.
 
 ### Implementation for User Story 2
 
-- [ ] T021 [P] [US2] Implement Zod schema for `submitQuizAttempt` in `src/validation/schemas/Quiz.schema.ts`.
-- [ ] T022 [US2] Implement `submitQuizAttempt` service logic in `src/services/Quiz.service.ts`, including scoring.
-- [ ] T023 [US2] Implement `submitQuizAttempt` controller and link to route. (Endpoint: `POST /quizzes/:id/attempt`)
-- [ ] T024 [US2] Update `getQuizById` service/controller to handle student requests (e.g., exclude correct answers before submission).
+- [X] T021 [P] [US2] Implement Zod schema for `submitQuizAttempt` in `src/validation/schemas/Quiz.schema.ts`.
+- [X] T022 [US2] Implement `submitQuizAttempt` service logic in `src/services/Quiz.service.ts`, including scoring.
+- [X] T023 [US2] Implement `submitQuizAttempt` controller and link to route. (Endpoint: `POST /quizzes/:id/attempt`)
+- [X] T024 [US2] Update `getQuizById` service/controller to handle student requests (e.g., exclude correct answers before submission).
 
 **Checkpoint**: User Story 2 (Quiz submission for Students) should be fully functional and testable independently.
 

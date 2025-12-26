@@ -35,7 +35,7 @@ class AuthService {
    * @returns The newly created user.
    */
   public async register(data: RegisterBody) {
-    const { email, password, firstName, lastName, schoolCode } = data;
+    const { email, password, firstName, lastName, schoolCode, role } = data;
 
     const isSchoolCodeValid = await this.validateSchoolCode(schoolCode);
     if (!isSchoolCodeValid) {
@@ -54,6 +54,7 @@ class AuthService {
     const newUser = new User({
       email,
       password: hashedPassword,
+      role: role || 'student',
       profile: {
         firstName,
         lastName,
@@ -113,6 +114,8 @@ class AuthService {
         user.lockUntil = new Date(Date.now() + LOCKOUT_DURATION_SECONDS * 1000);
         const auditLog = new AuditLog({ userId: user._id, action: 'LOCKOUT' });
         await auditLog.save();
+        await user.save();
+        throw new Error(`Account locked. Try again after ${LOCKOUT_DURATION_SECONDS} seconds.`);
       }
       await user.save();
       

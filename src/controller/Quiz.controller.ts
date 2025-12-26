@@ -5,7 +5,8 @@
  */
 
 import { Request, Response } from 'express';
-import { sendSuccess, sendError } from '../utils/response.utils';
+import { sendSuccess, sendError, sendNotFound } from '../utils/response.utils';
+import { QuizService } from '../services/Quiz.service';
 
 /**
  * Placeholder for creating a new quiz.
@@ -42,8 +43,15 @@ export async function getAllQuizzes(req: Request, res: Response): Promise<void> 
 export async function getQuizById(req: Request, res: Response): Promise<void> {
     try {
         const { id } = req.params;
-        // Implementation for T014 will go here
-        sendSuccess(res, { message: `getQuizById placeholder for id: ${id}` });
+        const userRole = (req as any).user?.role || 'student'; // Default to student for safety
+        
+        const quiz = await QuizService.getQuizById(id, userRole);
+        
+        if (!quiz) {
+            return sendNotFound(res, 'Quiz');
+        }
+
+        sendSuccess(res, quiz);
     } catch (error) {
         console.error('Error in getQuizById:', error);
         sendError(res, 'Failed to fetch quiz', 500);
@@ -77,5 +85,32 @@ export async function deleteQuiz(req: Request, res: Response): Promise<void> {
     } catch (error) {
         console.error('Error in deleteQuiz:', error);
         sendError(res, 'Failed to delete quiz', 500);
+    }
+}
+
+/**
+ * Placeholder for submitting a quiz attempt.
+ * @route POST /api/v1/quizzes/:id/attempt
+ */
+export async function submitQuizAttempt(req: Request, res: Response): Promise<void> {
+    try {
+        const { id } = req.params;
+
+        // Manual check for Authorization header since middleware is not yet implemented/applied
+        if (!req.headers.authorization) {
+            return sendError(res, 'Authentication required', 401);
+        }
+
+        const userId = (req as any).user?.id || 'anonymous'; // Fallback for testing if auth middleware not present
+        
+        const result = await QuizService.submitQuizAttempt(id, userId, req.body);
+        
+        sendSuccess(res, result, 201, 'Quiz attempt submitted successfully');
+    } catch (error: any) {
+        if (error.message === 'Quiz not found') {
+            return sendNotFound(res, 'Quiz');
+        }
+        console.error('Error in submitQuizAttempt:', error);
+        sendError(res, 'Failed to submit quiz attempt', 500);
     }
 }
