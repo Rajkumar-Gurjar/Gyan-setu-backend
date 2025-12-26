@@ -89,8 +89,7 @@ Examples of foundational tasks (adjust based on your project):
 ### Implementation for User Story 1
 
 - [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Define Zod validation schemas with multilingual support in src/validation/schemas/[entity1].schema.ts
-- [ ] T014 [P] [US1] Create [Entity2] model in src/models/[entity2].py
+- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
 - [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
 - [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
 - [ ] T016 [US1] Add validation and error handling

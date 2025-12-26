@@ -13,9 +13,7 @@
 
 import { Router, Request, Response } from 'express';
 import lessonRouter from './Lesson/Lesson.route';
-// Future imports:
-// import authRouter from './auth.routes';
-// import quizRouter from './quiz.routes';
+import quizRouter from './Quiz/Quiz.route'; // Import QuizRouter
 
 const router = Router();
 
@@ -43,8 +41,7 @@ router.get('/health', (req: Request, res: Response) => {
 // Lesson Routes
 router.use('/lessons', lessonRouter);
 
-// Future Mounts:
-// router.use('/auth', authRouter);
-// router.use('/quizzes', quizRouter);
+// Quiz Routes
+router.use('/quizzes', quizRouter); // Mount QuizRouter
 
 export default router;

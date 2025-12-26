@@ -1,67 +1,50 @@
-<!--
-Sync Impact Report:
-- Version change: [TEMPLATE] → 1.0.0
-- List of modified principles:
-    - [PRINCIPLE_1_NAME] → I. Offline-First & Data Resiliency
-    - [PRINCIPLE_2_NAME] → II. Multilingual Inclusivity
-    - [PRINCIPLE_3_NAME] → III. Optimized for Low-Bandwidth
-    - [PRINCIPLE_4_NAME] → IV. Layered Decoupling
-    - [PRINCIPLE_5_NAME] → V. Strict Validation & Security
-- Added sections: Technology Stack & Standards, Development Workflow
-- Removed sections: None
-- Templates requiring updates:
-    - ✅ updated: .specify/templates/plan-template.md
-    - ✅ updated: .specify/templates/spec-template.md
-    - ✅ updated: .specify/templates/tasks-template.md
-- Follow-up TODOs: None
--->
-
-# Gyan-setu-backend Constitution
+# [PROJECT_NAME] Constitution
+<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
 ## Core Principles
 
-### I. Offline-First & Data Resiliency
-All API endpoints and data models MUST prioritize offline-first capabilities. This includes supporting optimistic updates, maintaining sync queues, and providing robust conflict resolution (defaulting to last-write-wins). Batch operations MUST be supported to minimize network calls for users with intermittent connectivity.
+### [PRINCIPLE_1_NAME]
+<!-- Example: I. Library-First -->
+[PRINCIPLE_1_DESCRIPTION]
+<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
 
-### II. Multilingual Inclusivity
-The platform serves a diverse linguistic demographic. All user-facing content (lessons, quizzes, feedback) MUST support Punjabi, Hindi, and English. API responses MUST include localized fields for these languages where applicable. Accessibility metadata is a requirement for all content.
+### [PRINCIPLE_2_NAME]
+<!-- Example: II. CLI Interface -->
+[PRINCIPLE_2_DESCRIPTION]
+<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
 
-### III. Optimized for Low-Bandwidth
-The system MUST be performant in rural areas with limited connectivity. This requires mandatory response compression (Gzip/Brotli), field filtering (sparse fieldsets), and adaptive quality for multimedia assets (videos and images). Data transfer MUST be minimized without compromising educational value.
+### [PRINCIPLE_3_NAME]
+<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+[PRINCIPLE_3_DESCRIPTION]
+<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
 
-### IV. Layered Decoupling
-The codebase MUST follow a strict layered architecture:
-- **Routes**: Define entry points and attach middleware.
-- **Controllers**: Handle request orchestration, input validation, and response formatting.
-- **Services**: Contain all business logic and orchestrate model interactions.
-- **Models**: Define data schemas, validation rules, and database hooks.
-Business logic MUST NOT leak into controllers or routes.
+### [PRINCIPLE_4_NAME]
+<!-- Example: IV. Integration Testing -->
+[PRINCIPLE_4_DESCRIPTION]
+<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
 
-### V. Strict Validation & Security
-Every API request MUST be validated at the boundary using Zod schemas. Type safety is non-negotiable, enforced through TypeScript. Security follows the principle of least privilege, utilizing JWT-based stateless authentication and strict Role-Based Access Control (RBAC).
+### [PRINCIPLE_5_NAME]
+<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+[PRINCIPLE_5_DESCRIPTION]
+<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
 
-## Technology Stack & Standards
+## [SECTION_2_NAME]
+<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
 
-The project utilizes a modern, high-performance stack:
-- **Runtime**: Node.js v22 LTS (ESM).
-- **Language**: TypeScript 5.3+.
-- **Framework**: Express.js v5.x.
-- **Persistence**: MongoDB v7.x (Mongoose v9+) and Redis v7.x (Bull v4+ for queues).
-- **Testing**: Jest and Supertest for unit/integration tests.
-- **Infrastructure**: AWS S3/CloudFront for media delivery, Docker for containerization.
+[SECTION_2_CONTENT]
+<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
 
-## Development Workflow
+## [SECTION_3_NAME]
+<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
 
-1. **Feature Specification**: Every feature begins with a spec and an implementation plan.
-2. **Test-Driven Approach**: Tests SHOULD be written alongside implementation to ensure coverage and contract adherence.
-3. **Code Quality**: Pre-commit hooks enforce linting (ESLint), formatting (Prettier), and type checking (TSC).
-4. **Documentation**: OpenAPI/Swagger documentation MUST be updated for all API changes.
+[SECTION_3_CONTENT]
+<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
 
 ## Governance
+<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-- The Constitution is the supreme guide for project development.
-- Amendments require a version increment (SemVer) and a Sync Impact Report.
-- All Pull Requests must be reviewed for compliance with these principles.
-- Runtime guidance is provided via `GEMINI.md`.
+[GOVERNANCE_RULES]
+<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-26 | **Last Amended**: 2025-12-26
+**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->

@@ -31,11 +31,7 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- [ ] **Offline-First**: Does the design support optimistic updates and batch sync?
-- [ ] **Multilingual**: Are Punjabi, Hindi, and English fields accounted for in the schema?
-- [ ] **Bandwidth**: Does the response structure support field filtering or compression needs?
-- [ ] **Layering**: Is business logic strictly isolated in a service layer?
-- [ ] **Validation**: Are Zod schemas defined for all new inputs?
+[Gates determined based on constitution file]
 
 ## Project Structure
 
