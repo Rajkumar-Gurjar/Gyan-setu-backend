@@ -1,6 +1,7 @@
 import { QuizModel, IQuiz } from '../models/quiz/Quiz.model';
 import { ProgressModel } from '../models/Progress.model';
 import { Types } from 'mongoose';
+import { emitMetric, Metrics } from '../utils/metrics.utils';
 
 // Placeholder for Quiz service functions
 export const QuizService = {
@@ -8,16 +9,26 @@ export const QuizService = {
      * Creates a new quiz.
      */
     async createQuiz(quizData: Partial<IQuiz>, userId: string): Promise<IQuiz> {
-        const totalPoints = quizData.questions?.reduce((sum, q) => sum + (q.points || 0), 0) || 0;
-        
-        const newQuiz = new QuizModel({
-            ...quizData,
-            totalPoints,
-            createdBy: new Types.ObjectId(userId)
-        });
-        
-        await newQuiz.save();
-        return newQuiz;
+        try {
+            const totalPoints = quizData.questions?.reduce((sum, q) => sum + (q.points || 0), 0) || 0;
+            
+            const newQuiz = new QuizModel({
+                ...quizData,
+                totalPoints,
+                createdBy: new Types.ObjectId(userId)
+            });
+            
+            await newQuiz.save();
+            
+            console.log(`[INFO] Quiz created successfully: ${newQuiz._id} by user: ${userId}`);
+            emitMetric(Metrics.QUIZ_CREATED, 1, { userId, quizId: String(newQuiz._id) });
+            
+            return newQuiz;
+        } catch (error) {
+            console.error(`[ERROR] Failed to create quiz: ${error instanceof Error ? error.message : String(error)}`);
+            emitMetric(Metrics.API_ERROR, 1, { operation: 'createQuiz', userId });
+            throw error;
+        }
     },
 
     /**
@@ -64,22 +75,38 @@ export const QuizService = {
             updateData.totalPoints = updateData.questions.reduce((sum, q) => sum + (q.points || 0), 0);
         }
         
-        return QuizModel.findOneAndUpdate(
+        const updatedQuiz = await QuizModel.findOneAndUpdate(
             { _id: quizId, isDeleted: false },
             { $set: updateData },
             { new: true, runValidators: true }
         );
+
+        if (updatedQuiz) {
+            console.log(`[INFO] Quiz updated successfully: ${quizId}`);
+        } else {
+            console.warn(`[WARN] Quiz update failed: ${quizId} not found or deleted`);
+        }
+
+        return updatedQuiz;
     },
 
     /**
      * Deletes a quiz (soft delete).
      */
     async deleteQuiz(quizId: string | Types.ObjectId): Promise<IQuiz | null> {
-        return QuizModel.findOneAndUpdate(
+        const deletedQuiz = await QuizModel.findOneAndUpdate(
             { _id: quizId, isDeleted: false },
             { $set: { isDeleted: true, isActive: false } },
             { new: true }
         );
+
+        if (deletedQuiz) {
+            console.log(`[INFO] Quiz deleted successfully: ${quizId}`);
+        } else {
+            console.warn(`[WARN] Quiz deletion failed: ${quizId} not found or already deleted`);
+        }
+
+        return deletedQuiz;
     },
 
     /**
@@ -87,109 +114,130 @@ export const QuizService = {
      */
     async submitQuizAttempt(quizId: string, userId: string, submissionData: { 
         answers: Array<{ questionId: string, selectedOption?: string, answer?: string }>,
-        startedAt?: string
+        startedAt?: string,
+        clientTimestamp?: string
     }) {
-        const quiz = await QuizModel.findById(quizId);
-        if (!quiz) {
-            throw new Error('Quiz not found');
-        }
+        try {
+            const quiz = await QuizModel.findById(quizId);
+            if (!quiz) {
+                console.warn(`[WARN] Quiz attempt submission failed: Quiz ${quizId} not found`);
+                throw new Error('Quiz not found');
+            }
 
-        let score = 0;
-        const results = quiz.questions.map(question => {
-            const userAnswer = submissionData.answers.find(a => a.questionId === question._id.toString());
-            let isCorrect = false;
-            let pointsEarned = 0;
+            let score = 0;
+            const results = quiz.questions.map(question => {
+                const userAnswer = submissionData.answers.find(a => a.questionId === question._id.toString());
+                let isCorrect = false;
+                let pointsEarned = 0;
 
-            if (userAnswer) {
-                if (question.type === 'multiple_choice' || question.type === 'true_false' || question.type === 'image_choice') {
-                    const selectedOption = question.options.find(o => o._id.toString() === userAnswer.selectedOption);
-                    if (selectedOption && selectedOption.isCorrect) {
-                        isCorrect = true;
-                        pointsEarned = question.points;
-                    }
-                } else if (question.type === 'fill_blank') {
-                    // Simple case-insensitive match for fill-in-the-blank
-                    if (userAnswer.answer?.trim().toLowerCase() === question.correctAnswer?.en.trim().toLowerCase()) {
-                        isCorrect = true;
-                        pointsEarned = question.points;
+                if (userAnswer) {
+                    if (question.type === 'multiple_choice' || question.type === 'true_false' || question.type === 'image_choice') {
+                        const selectedOption = question.options.find(o => o._id.toString() === userAnswer.selectedOption);
+                        if (selectedOption && selectedOption.isCorrect) {
+                            isCorrect = true;
+                            pointsEarned = question.points;
+                        }
+                    } else if (question.type === 'fill_blank') {
+                        // Simple case-insensitive match for fill-in-the-blank
+                        if (userAnswer.answer?.trim().toLowerCase() === question.correctAnswer?.en.trim().toLowerCase()) {
+                            isCorrect = true;
+                            pointsEarned = question.points;
+                        }
                     }
                 }
+
+                if (isCorrect) {
+                    score += pointsEarned;
+                }
+
+                return {
+                    questionId: question._id,
+                    selectedOption: userAnswer?.selectedOption ? new Types.ObjectId(userAnswer.selectedOption) : undefined,
+                    answer: userAnswer?.answer,
+                    isCorrect,
+                    points: pointsEarned,
+                    explanation: question.explanation
+                };
+            });
+
+            const totalPoints = quiz.totalPoints || quiz.questions.reduce((sum, q) => sum + (q.points || 0), 0);
+            const percentage = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
+            const passed = percentage >= quiz.passingScore;
+
+            const submittedAt = submissionData.clientTimestamp ? new Date(submissionData.clientTimestamp) : new Date();
+            const startedAt = submissionData.startedAt ? new Date(submissionData.startedAt) : undefined;
+            const duration = startedAt ? Math.floor((submittedAt.getTime() - startedAt.getTime()) / 1000) : undefined;
+
+            // Recording to Progress model
+            if (quiz.lessonId) {
+                let progress = await ProgressModel.findOne({ userId, lessonId: quiz.lessonId });
+                
+                if (!progress) {
+                    progress = new ProgressModel({
+                        userId,
+                        lessonId: quiz.lessonId,
+                        quizAttempts: []
+                    });
+                }
+
+                const attemptNumber = progress.quizAttempts.filter(a => a.quizId.toString() === quizId).length + 1;
+
+                const attempt = {
+                    quizId: new Types.ObjectId(quizId),
+                    attemptNumber,
+                    score,
+                    totalPoints,
+                    percentage,
+                    passed,
+                    answers: results.map(r => ({
+                        questionId: r.questionId,
+                        selectedOption: r.selectedOption,
+                        answer: r.answer,
+                        isCorrect: r.isCorrect,
+                        points: r.points
+                    })),
+                    startedAt,
+                    submittedAt,
+                    duration
+                };
+
+                progress.quizAttempts.push(attempt);
+                
+                if (percentage > progress.bestQuizScore) {
+                    progress.bestQuizScore = percentage;
+                }
+
+                // Update sync status
+                progress.syncStatus = 'synced';
+                progress.lastSyncedAt = new Date();
+                if (submissionData.clientTimestamp) {
+                    progress.clientTimestamp = new Date(submissionData.clientTimestamp);
+                }
+
+                await progress.save();
             }
 
-            if (isCorrect) {
-                score += pointsEarned;
-            }
+            console.log(`[INFO] Quiz attempt submitted successfully: ${quizId} by user: ${userId}, score: ${percentage}%${submissionData.clientTimestamp ? ' (Synced from client)' : ''}`);
+            emitMetric(Metrics.QUIZ_ATTEMPTED, 1, { userId, quizId, sync: submissionData.clientTimestamp ? 'true' : 'false' });
+            emitMetric(Metrics.QUIZ_SCORE, percentage, { userId, quizId });
 
             return {
-                questionId: question._id,
-                selectedOption: userAnswer?.selectedOption ? new Types.ObjectId(userAnswer.selectedOption) : undefined,
-                answer: userAnswer?.answer,
-                isCorrect,
-                points: pointsEarned,
-                explanation: question.explanation
-            };
-        });
-
-        const totalPoints = quiz.totalPoints || quiz.questions.reduce((sum, q) => sum + (q.points || 0), 0);
-        const percentage = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
-        const passed = percentage >= quiz.passingScore;
-
-        const submittedAt = new Date();
-        const startedAt = submissionData.startedAt ? new Date(submissionData.startedAt) : undefined;
-        const duration = startedAt ? Math.floor((submittedAt.getTime() - startedAt.getTime()) / 1000) : undefined;
-
-        // Recording to Progress model
-        if (quiz.lessonId) {
-            let progress = await ProgressModel.findOne({ userId, lessonId: quiz.lessonId });
-            
-            if (!progress) {
-                progress = new ProgressModel({
-                    userId,
-                    lessonId: quiz.lessonId,
-                    quizAttempts: []
-                });
-            }
-
-            const attemptNumber = progress.quizAttempts.filter(a => a.quizId.toString() === quizId).length + 1;
-
-            const attempt = {
-                quizId: new Types.ObjectId(quizId),
-                attemptNumber,
+                quizId,
+                userId,
                 score,
                 totalPoints,
                 percentage,
                 passed,
-                answers: results.map(r => ({
-                    questionId: r.questionId,
-                    selectedOption: r.selectedOption,
-                    answer: r.answer,
-                    isCorrect: r.isCorrect,
-                    points: r.points
-                })),
-                startedAt,
-                submittedAt,
-                duration
+                results,
+                submittedAt
             };
-
-            progress.quizAttempts.push(attempt);
-            
-            if (percentage > progress.bestQuizScore) {
-                progress.bestQuizScore = percentage;
+        } catch (error) {
+            if (!(error instanceof Error && error.message === 'Quiz not found')) {
+                console.error(`[ERROR] Quiz attempt submission failed: ${error instanceof Error ? error.message : String(error)}`);
+                emitMetric(Metrics.API_ERROR, 1, { operation: 'submitQuizAttempt', userId, quizId });
             }
-
-            await progress.save();
+            throw error;
         }
-
-        return {
-            quizId,
-            userId,
-            score,
-            totalPoints,
-            percentage,
-            passed,
-            results,
-            submittedAt
-        };
     },
 
     /**

@@ -2,10 +2,14 @@ import express from 'express';
 import http from 'http';
 import mainRouter from './routes'; // Import the main router
 import { connectDB, disconnectDB } from './config/database'; // Import the connectDB and disconnectDB functions
+import { setupSwagger } from './config/swagger.config';
 
 const app = express();
 
 app.use(express.json());
+
+// Swagger Documentation
+setupSwagger(app);
 
 const port = process.env.PORT || 3000;
 

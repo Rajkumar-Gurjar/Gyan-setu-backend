@@ -6,7 +6,11 @@ import { RegisterBody, LoginBody } from '../types/auth.types';
 class AuthController {
   public async register(req: Request, res: Response): Promise<void> {
     try {
-      const newUser = await AuthService.register(req.body as RegisterBody);
+      const newUser = await AuthService.register(
+        req.body as RegisterBody,
+        req.ip,
+        req.get('User-Agent')
+      );
       // Exclude password from the returned user object
       const userResponse = newUser.toObject();
       delete userResponse.password;
@@ -25,7 +29,11 @@ class AuthController {
 
   public async login(req: Request, res: Response): Promise<void> {
     try {
-      const data = await AuthService.login(req.body as LoginBody);
+      const data = await AuthService.login(
+        req.body as LoginBody,
+        req.ip,
+        req.get('User-Agent')
+      );
       sendSuccess(res, data, 200, 'User logged in successfully');
     } catch (error: any) {
       if (error.message === 'Invalid credentials') {
@@ -45,7 +53,11 @@ class AuthController {
         sendError(res, 'Refresh token is required', 400);
         return;
       }
-      const accessToken = await AuthService.refresh(refreshToken);
+      const accessToken = await AuthService.refresh(
+        refreshToken,
+        req.ip,
+        req.get('User-Agent')
+      );
       sendSuccess(res, { accessToken }, 200, 'Token refreshed successfully');
     } catch (error: any) {
       sendError(res, error.message || 'Failed to refresh token', 401);

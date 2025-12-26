@@ -10,13 +10,14 @@ const router = Router();
 // Health Check
 // ============================================================================
 /**
- * @route   GET /api/v1/health
- * @desc    Check if API is running
- * @access  Public
- *//**
- * @route   GET /api/v1/health
- * @desc    Check if API is running
- * @access  Public
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Check API health
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: API is healthy
  */
 router.get('/health', (req: Request, res: Response) => {
     res.status(200).json({

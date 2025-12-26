@@ -32,10 +32,12 @@ class AuthService {
   /**
    * Registers a new user.
    * @param data The registration data.
+   * @param ip The IP address of the user.
+   * @param userAgent The user agent of the user.
    * @returns The newly created user.
    */
-  public async register(data: RegisterBody) {
-    const { email, password, firstName, lastName, schoolCode, role } = data;
+  public async register(data: RegisterBody, ip?: string, userAgent?: string) {
+    const { email, password, firstName, lastName, language, schoolCode, class: className, section, role } = data;
 
     const isSchoolCodeValid = await this.validateSchoolCode(schoolCode);
     if (!isSchoolCodeValid) {
@@ -58,9 +60,12 @@ class AuthService {
       profile: {
         firstName,
         lastName,
+        language: language || 'pa',
       },
       studentInfo: {
         schoolId: school?._id,
+        class: className,
+        section,
       }
     });
 
@@ -69,6 +74,8 @@ class AuthService {
     const auditLog = new AuditLog({
       userId: newUser._id,
       action: 'REGISTER',
+      ip,
+      userAgent,
     });
     await auditLog.save();
 
@@ -93,9 +100,11 @@ class AuthService {
   /**
    * Logs in a user.
    * @param data The login data.
+   * @param ip The IP address of the user.
+   * @param userAgent The user agent of the user.
    * @returns Access and refresh tokens.
    */
-  public async login(data: LoginBody) {
+  public async login(data: LoginBody, ip?: string, userAgent?: string) {
     const { email, password } = data;
 
     const user = await User.findOne({ email }).select('+password');
@@ -112,14 +121,14 @@ class AuthService {
       user.loginAttempts += 1;
       if (user.loginAttempts >= LOCKOUT_THRESHOLD) {
         user.lockUntil = new Date(Date.now() + LOCKOUT_DURATION_SECONDS * 1000);
-        const auditLog = new AuditLog({ userId: user._id, action: 'LOCKOUT' });
+        const auditLog = new AuditLog({ userId: user._id, action: 'LOCKOUT', ip, userAgent });
         await auditLog.save();
         await user.save();
         throw new Error(`Account locked. Try again after ${LOCKOUT_DURATION_SECONDS} seconds.`);
       }
       await user.save();
       
-      const auditLog = new AuditLog({ userId: user._id, action: 'LOGIN_FAILURE' });
+      const auditLog = new AuditLog({ userId: user._id, action: 'LOGIN_FAILURE', ip, userAgent });
       await auditLog.save();
 
       throw new Error('Invalid credentials');
@@ -132,7 +141,7 @@ class AuthService {
     user.refreshToken = tokens.refreshToken; // For single-session enforcement
     await user.save();
 
-    const auditLog = new AuditLog({ userId: user._id, action: 'LOGIN_SUCCESS' });
+    const auditLog = new AuditLog({ userId: user._id, action: 'LOGIN_SUCCESS', ip, userAgent });
     await auditLog.save();
 
     const userResponse = user.toObject();
@@ -145,9 +154,11 @@ class AuthService {
   /**
    * Refreshes the access token using a refresh token.
    * @param refreshToken The refresh token.
+   * @param ip The IP address of the user.
+   * @param userAgent The user agent of the user.
    * @returns A new access token.
    */
-  public async refresh(refreshToken: string): Promise<string> {
+  public async refresh(refreshToken: string, ip?: string, userAgent?: string): Promise<string> {
     try {
       const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'your_jwt_refresh_secret') as { id: string };
       
@@ -159,6 +170,9 @@ class AuthService {
       const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'your_jwt_secret', {
         expiresIn: '15m',
       });
+
+      const auditLog = new AuditLog({ userId: user._id, action: 'REFRESH', ip, userAgent });
+      await auditLog.save();
 
       return accessToken;
     } catch (error) {

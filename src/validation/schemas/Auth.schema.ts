@@ -5,7 +5,10 @@ export const registerSchema = z.object({
   password: z.string().min(8),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
+  language: z.enum(['pa', 'hi', 'en']).default('pa'),
   schoolCode: z.string().min(1),
+  class: z.number().optional(),
+  section: z.string().optional(),
   role: z.enum(['student', 'teacher', 'admin']).optional(),
 });
 
